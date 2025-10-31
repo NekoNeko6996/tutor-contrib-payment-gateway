@@ -1,0 +1,2 @@
+recursive-include tutorpayment_gateway/patches *
+recursive-include tutorpayment_gateway/templates *
