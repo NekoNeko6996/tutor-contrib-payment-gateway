@@ -56,7 +56,6 @@ MY_INIT_TASKS: list[tuple[str, tuple[str, ...]]] = [
     ### ("lms", ("payment-gateway", "tasks", "lms", "init.sh")),
 ]
 
-
 # For each task added to MY_INIT_TASKS, we load the task template
 # and add it to the CLI_DO_INIT_TASKS filter, which tells Tutor to
 # run it as part of the `init` job.
@@ -158,7 +157,6 @@ hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
 for path in glob(str(importlib_resources.files("tutorpayment_gateway") / "patches" / "*")):
     with open(path, encoding="utf-8") as patch_file:
         hooks.Filters.ENV_PATCHES.add_item((os.path.basename(path), patch_file.read()))
-
 
 ########################################
 # CUSTOM JOBS (a.k.a. "do-commands")

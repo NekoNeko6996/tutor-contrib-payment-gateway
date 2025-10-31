@@ -1,0 +1,2 @@
+COPY ./plugins/payment-gateway/apps/payment_gateway_api /openedx/extra-apps/payment_gateway_api
+RUN pip install -e /openedx/extra-apps/payment_gateway_api
