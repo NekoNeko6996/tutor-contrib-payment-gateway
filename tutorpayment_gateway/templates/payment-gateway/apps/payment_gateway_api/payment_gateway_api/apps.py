@@ -1,6 +1,5 @@
-# payment_gateway_api/payment_gateway_api/apps.py
 from django.apps import AppConfig
-from edx_django_utils.plugins import PluginURLs
+from edx_django_utils.plugins import PluginURLs, PluginSettings
 from openedx.core.djangoapps.plugins.constants import ProjectType
 
 class PaymentGatewayAPIConfig(AppConfig):
@@ -9,11 +8,18 @@ class PaymentGatewayAPIConfig(AppConfig):
     verbose_name = "Payment Gateway API"
 
     plugin_app = {
+        # URLs cho LMS
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
                 PluginURLs.NAMESPACE: "payment_gateway_api",
                 PluginURLs.REGEX: r"^payment-gateway/",
                 PluginURLs.RELATIVE_PATH: "urls",
             }
-        }
+        },
+        # Nạp settings từ ENV_TOKENS → settings.PAYMENT_*
+        PluginSettings.CONFIG: {
+            ProjectType.LMS: {
+                "common": {"relative_path": "settings/common.py"},
+            },
+        },
     }

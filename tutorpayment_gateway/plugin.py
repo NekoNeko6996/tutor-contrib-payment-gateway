@@ -17,6 +17,8 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # Each new setting is a pair: (setting_name, default_value).
         # Prefix your setting names with 'PAYMENT_GATEWAY_'.
         ("PAYMENT_GATEWAY_VERSION", __version__),
+        ("PAYMENT_NODE_CREATE_URL", "http://payment-service:3000/api/payments/create"),
+        ("PAYMENT_SHARED_SECRET", "CHANGE_ME"),
     ]
 )
 
@@ -28,6 +30,9 @@ hooks.Filters.CONFIG_UNIQUE.add_items(
         # Prefix your setting names with 'PAYMENT_GATEWAY_'.
         # For example:
         ### ("PAYMENT_GATEWAY_SECRET_KEY", "{{ 24|random_string }}"),
+
+        # Ví dụ: sinh ngẫu nhiên nếu muốn
+        # ("PAYMENT_SHARED_SECRET", "{{ 32|random_string }}"),  
     ]
 )
 
@@ -142,6 +147,8 @@ hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
     [
         ("payment-gateway/build", "plugins"),
         ("payment-gateway/apps", "plugins"),
+        # ➜ render app vào build context để Docker COPY được
+        ("payment-gateway/apps", "build/openedx"),
     ],
 )
 
@@ -157,6 +164,45 @@ hooks.Filters.ENV_TEMPLATE_TARGETS.add_items(
 for path in glob(str(importlib_resources.files("tutorpayment_gateway") / "patches" / "*")):
     with open(path, encoding="utf-8") as patch_file:
         hooks.Filters.ENV_PATCHES.add_item((os.path.basename(path), patch_file.read()))
+
+
+# === Patch settings để đưa biến vào ENV_TOKENS ===
+# hooks.Filters.ENV_PATCHES.add_item({
+#     "openedx-common-settings": """
+# # --- payment-gateway plugin ENV tokens ---
+# ENV_TOKENS.update({
+#     "PAYMENT_NODE_CREATE_URL": "{{ PAYMENT_NODE_CREATE_URL }}",
+#     "PAYMENT_SHARED_SECRET": "{{ PAYMENT_SHARED_SECRET }}",
+# })
+
+# # Đảm bảo app được load để models/migrations hoạt động
+# ADDL_INSTALLED_APPS.append("payment_gateway_api")
+# """
+# })
+
+# (hoặc) Cách B: add_items với list
+hooks.Filters.ENV_PATCHES.add_items([
+    ("openedx-common-settings",
+    """
+# --- payment-gateway plugin ENV tokens ---
+ENV_TOKENS.update({
+    "PAYMENT_NODE_CREATE_URL": "{{ PAYMENT_NODE_CREATE_URL }}",
+    "PAYMENT_SHARED_SECRET": "{{ PAYMENT_SHARED_SECRET }}",
+})
+
+PAYMENT_NODE_CREATE_URL = ENV_TOKENS.get("PAYMENT_NODE_CREATE_URL")
+PAYMENT_SHARED_SECRET   = ENV_TOKENS.get("PAYMENT_SHARED_SECRET")
+
+# Luôn dùng AppConfig để PluginURLs được đăng ký
+try:
+    ADDL_INSTALLED_APPS.append("payment_gateway_api.apps.PaymentGatewayAPIConfig")
+except NameError:
+    try:
+        INSTALLED_APPS += ("payment_gateway_api.apps.PaymentGatewayAPIConfig",)
+    except NameError:
+        pass
+""")
+])
 
 ########################################
 # CUSTOM JOBS (a.k.a. "do-commands")

@@ -1,2 +1,10 @@
-COPY ./plugins/payment-gateway/apps/payment_gateway_api /openedx/extra-apps/payment_gateway_api
-RUN pip install -e /openedx/extra-apps/payment_gateway_api
+# COPY từ build context: env/build/openedx/
+# => đường dẫn đúng là: ./payment-gateway/apps/payment_gateway_api
+# COPY ./payment-gateway/apps/payment_gateway_api /openedx/extra-apps/payment_gateway_api
+# RUN pip install -e /openedx/extra-apps/payment_gateway_api
+
+# COPY từ build context: env/build/openedx/
+# => đường dẫn đúng là: ./payment-gateway/apps/payment_gateway_api
+COPY ./payment-gateway/apps/payment_gateway_api /openedx/extra-apps/payment_gateway_api
+# ĐỔI -e thành cài thường (non-editable)
+RUN pip install /openedx/extra-apps/payment_gateway_api
