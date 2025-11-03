@@ -1,3 +1,4 @@
+# payment_gateway_api/setup.py
 from setuptools import setup, find_packages
 
 setup(
@@ -8,8 +9,11 @@ setup(
     include_package_data=True,
     install_requires=[],
     entry_points={
-        # Dùng plugin API mới
-        "openedx.plugin.app": [
+        "lms.djangoapp": [
+            "payment_gateway_api = payment_gateway_api.apps:PaymentGatewayAPIConfig",
+        ],
+        # Tùy chọn nếu muốn dùng ở CMS/Studio
+        "cms.djangoapp": [
             "payment_gateway_api = payment_gateway_api.apps:PaymentGatewayAPIConfig",
         ],
     },
